@@ -56,17 +56,6 @@ async def fsm_got_title(message: Message, state: FSMContext) -> None:
     )
 
 
-@router.callback_query(PriorityCB.filter(), AddTask.waiting_priority)
-async def fsm_got_priority(query: CallbackQuery, callback_data: PriorityCB, state: FSMContext) -> None:
-    await state.update_data(priority=callback_data.priority)
-    await state.set_state(AddTask.waiting_due_date)
-    await query.message.edit_text(
-        "📅 *Due date?* (optional)\n\nType: `tomorrow`, `next week`, `DD.MM.YYYY`, or `skip`",
-        parse_mode="Markdown",
-    )
-    await query.answer()
-
-
 @router.message(AddTask.waiting_due_date)
 async def fsm_got_due_date(message: Message, state: FSMContext, db: AsyncClient) -> None:
     data = await state.get_data()
@@ -252,9 +241,18 @@ async def cb_change_priority(query: CallbackQuery, callback_data: TaskCB) -> Non
 
 
 @router.callback_query(PriorityCB.filter())
-async def cb_priority_selected(query: CallbackQuery, callback_data: PriorityCB, db: AsyncClient) -> None:
+async def cb_priority_selected(query: CallbackQuery, callback_data: PriorityCB, state: FSMContext, db: AsyncClient) -> None:
+    current_state = await state.get_state()
+    if current_state == AddTask.waiting_priority.state:
+        await state.update_data(priority=callback_data.priority)
+        await state.set_state(AddTask.waiting_due_date)
+        await query.answer()
+        await query.message.edit_text(
+            "📅 *Due date?* (optional)\n\nType: `tomorrow`, `next week`, `DD.MM.YYYY`, or `skip`",
+            parse_mode="Markdown",
+        )
+        return
     if not callback_data.task_id:
-        # In FSM flow this is handled by fsm_got_priority; if we land here the state expired
         await query.answer("Please start again from Add Task.", show_alert=True)
         return
     await tq.update_task(db, callback_data.task_id, priority=callback_data.priority)
