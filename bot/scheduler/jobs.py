@@ -53,8 +53,12 @@ async def restore_reminders(bot) -> None:
     from bot.database.client import get_client
     from bot.database.queries.reminders import get_pending_reminders
 
-    db = await get_client()
-    pending = await get_pending_reminders(db)
+    try:
+        db = await get_client()
+        pending = await get_pending_reminders(db)
+    except Exception as e:
+        logger.warning("Could not restore reminders (DB unavailable): %s", e)
+        return
     now = datetime.utcnow()
     count = 0
     for row in pending:
