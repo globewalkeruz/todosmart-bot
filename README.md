@@ -1,231 +1,195 @@
-# Telegram To-Do Bot 🤖
+# TodoSmart — Telegram To-Do Bot
 
-A simple and efficient Telegram bot for managing your daily tasks and to-do lists. Built with Python and the `python-telegram-bot` library.
-
-## Features ✨
-
-- ✅ Add new tasks
-- 📋 List pending and completed tasks
-- ✅ Mark tasks as completed
-- 🗑️ Delete tasks
-- 🧹 Clear completed tasks
-- 💾 Persistent storage (JSON file)
-- 🎯 User-specific task management
-
-## Commands 📝
-
-### Adding Tasks
-- `/add <task>` - Add a new task
-- `/todo <task>` - Quick add a task (alias for /add)
-
-### Viewing Tasks
-- `/list` - Show pending tasks
-- `/all` - Show all tasks (including completed)
-- `/completed` - Show only completed tasks
-
-### Managing Tasks
-- `/complete <id>` - Mark task as completed
-- `/delete <id>` - Delete a task
-- `/clear` - Clear all completed tasks
-
-### Help
-- `/start` - Welcome message and help
-- `/help` - Show help information
-
-## Setup Instructions 🚀
-
-### Option 1: Local Development
-
-#### 1. Create a Telegram Bot
-
-1. Open Telegram and search for `@BotFather`
-2. Start a chat with BotFather and send `/newbot`
-3. Follow the instructions to create your bot
-4. Save the bot token you receive
-
-#### 2. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-#### 3. Set Environment Variable
-
-**Windows (PowerShell):**
-```powershell
-$env:TELEGRAM_BOT_TOKEN="your_bot_token_here"
-```
-
-**Windows (Command Prompt):**
-```cmd
-set TELEGRAM_BOT_TOKEN=your_bot_token_here
-```
-
-**Linux/macOS:**
-```bash
-export TELEGRAM_BOT_TOKEN="your_bot_token_here"
-```
-
-#### 4. Run the Bot
-
-```bash
-python telegram_todo_bot.py
-```
-
-### Option 2: Deploy to Railway 🚄
-
-#### 1. Create a Telegram Bot
-
-1. Open Telegram and search for `@BotFather`
-2. Start a chat with BotFather and send `/newbot`
-3. Follow the instructions to create your bot
-4. Save the bot token you receive
-
-#### 2. Deploy to Railway
-
-1. **Fork or clone this repository**
-2. **Go to [Railway.app](https://railway.app)**
-3. **Sign up/Login with GitHub**
-4. **Click "New Project" → "Deploy from GitHub repo"**
-5. **Select your repository**
-6. **Add Environment Variable:**
-   - Variable: `TELEGRAM_BOT_TOKEN`
-   - Value: `your_bot_token_here`
-7. **Click "Deploy"**
-
-#### 3. Railway Configuration
-
-The project includes:
-- `Dockerfile` - Optimized for Railway deployment
-- `railway.json` - Railway-specific configuration
-- `.dockerignore` - Optimized Docker build
-- Automatic data persistence in `/app/data`
-
-#### 4. Monitor Your Bot
-
-- Check Railway dashboard for logs
-- Your bot will automatically restart if it crashes
-- Data is persisted in Railway's persistent storage
-
-### Option 3: Docker Deployment 🐳
-
-#### 1. Build the Docker Image
-
-```bash
-docker build -t telegram-todo-bot .
-```
-
-#### 2. Run the Container
-
-```bash
-docker run -d \
-  --name telegram-todo-bot \
-  -e TELEGRAM_BOT_TOKEN="your_bot_token_here" \
-  -v $(pwd)/data:/app/data \
-  telegram-todo-bot
-```
-
-## Usage Examples 💡
-
-```
-/add Buy groceries
-/todo Call mom
-/list
-/complete 1
-/delete 2
-/clear
-/all
-```
-
-## Data Storage 💾
-
-The bot stores all tasks in a `todos.json` file in the same directory as the script. Each user's tasks are stored separately, ensuring privacy and organization.
-
-## File Structure 📁
-
-```
-telegram-todo-bot/
-├── telegram_todo_bot.py    # Main bot script
-├── requirements.txt        # Python dependencies
-├── config.py              # Configuration settings
-├── Dockerfile             # Docker configuration for Railway
-├── railway.json           # Railway deployment config
-├── .dockerignore          # Docker build optimization
-├── README.md              # This file
-└── todos.json             # Data storage (created automatically)
-```
-
-## Railway Deployment Features 🚄
-
-### Automatic Scaling
-- Railway automatically scales your bot based on usage
-- No need to manage servers or infrastructure
-
-### Persistent Storage
-- Data is automatically persisted in Railway's storage
-- Your todos survive bot restarts and deployments
-
-### Environment Management
-- Secure environment variable management
-- Easy configuration through Railway dashboard
-
-### Monitoring & Logs
-- Real-time logs in Railway dashboard
-- Automatic restart on failures
-- Health checks and monitoring
-
-### Zero Configuration
-- Just add your `TELEGRAM_BOT_TOKEN` environment variable
-- Railway handles everything else automatically
-
-## Features in Detail 🔍
-
-### Task Management
-- **Add Tasks**: Use `/add` or `/todo` followed by your task description
-- **View Tasks**: Use `/list` to see pending tasks, `/all` to see everything
-- **Complete Tasks**: Use `/complete <id>` to mark a task as done
-- **Delete Tasks**: Use `/delete <id>` to remove a task permanently
-- **Clean Up**: Use `/clear` to remove all completed tasks
-
-### Data Persistence
-- All tasks are automatically saved to a JSON file
-- Data persists between bot restarts
-- Each user has their own separate task list
-
-### User Experience
-- Clean, emoji-rich interface
-- Clear error messages and help text
-- Intuitive command structure
-- Real-time task management
-
-## Troubleshooting 🔧
-
-### Common Issues
-
-1. **Bot not responding**: Check that your bot token is correct and the bot is running
-2. **Permission errors**: Make sure the bot has permission to write to the directory
-3. **Import errors**: Run `pip install -r requirements.txt` to install dependencies
-
-### Getting Help
-
-If you encounter issues:
-1. Check that all dependencies are installed
-2. Verify your bot token is correct
-3. Ensure the bot has the necessary permissions
-4. Check the console output for error messages
-
-## Contributing 🤝
-
-Feel free to contribute to this project by:
-- Adding new features
-- Improving the user interface
-- Fixing bugs
-- Adding more storage options
-
-## License 📄
-
-This project is open source and available under the MIT License.
+A feature-rich Telegram bot for personal and team task management, built with **aiogram 3.x** and **Supabase**.
 
 ---
 
-**Happy task managing! 🎯**
+## Features
+
+### Personal Mode (DM)
+- **Add tasks** via button flow or `/add <title>`
+- **Priority levels** — 🚨 Urgent / 🔴 High / 🟡 Medium / 🟢 Low
+- **Due dates** — natural language: `tomorrow`, `next week`, `DD.MM.YYYY`
+- **Real push reminders** — notifications fire at exact time via APScheduler
+- **Edit tasks** — change title or priority inline
+- **Delete tasks** — actually removes from database
+- **Statistics** — completion rate, priority breakdown
+- **Paginated task list** — 5 tasks per page with navigation buttons
+
+### Group Mode (Groups / Supergroups / Channels)
+- **Shared task board** — all members see group tasks
+- **Task assignment** — assign tasks to specific members
+- **Group statistics** — team-level completion tracking
+- **Member list** — view who is in the group
+
+### System
+- Reminders survive bot restarts (restored from Supabase on startup)
+- Daily summary sent to all users with pending tasks (configurable time)
+- Rate limiting — 1 request per 0.5s per user
+- Auto-registers users and groups on first interaction
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Bot framework | aiogram 3.x |
+| Database | Supabase (PostgreSQL) |
+| Scheduler | APScheduler 3.x |
+| Config | pydantic-settings |
+| Deployment | Docker + Railway |
+
+---
+
+## Project Structure
+
+```
+bot/
+├── main.py                  # Entry point
+├── config.py                # Reads .env via pydantic-settings
+├── handlers/
+│   ├── start.py             # /start, /help, main menu
+│   ├── tasks.py             # Add, list, view, complete, delete, edit, priority
+│   ├── reminders.py         # Set/cancel push reminders
+│   ├── groups.py            # Group tasks, members, assignment
+│   ├── stats.py             # Personal + group statistics
+│   └── errors.py            # Global error handler
+├── keyboards/
+│   ├── callback_data.py     # Type-safe CallbackData classes
+│   ├── main_menu.py         # Main menu (personal vs group)
+│   ├── task_kb.py           # Task list + task action keyboards
+│   ├── priority_kb.py       # Priority picker
+│   └── reminder_kb.py       # Reminder time picker
+├── database/
+│   ├── client.py            # Supabase async client singleton
+│   ├── models.py            # Pydantic models
+│   ├── schema.sql           # Full database schema (run once in Supabase)
+│   └── queries/             # One file per table: users, tasks, groups, reminders
+├── middlewares/
+│   ├── db_middleware.py     # Injects Supabase client into every handler
+│   ├── user_middleware.py   # Auto-upserts user on every update
+│   ├── group_middleware.py  # Auto-upserts group + member on group updates
+│   └── throttling.py        # Rate limiting
+├── scheduler/
+│   └── jobs.py              # APScheduler setup, schedule/cancel/restore reminders
+├── states/
+│   └── task_states.py       # FSM state groups for add/edit task flows
+└── utils/
+    ├── formatters.py        # Format task/stats for display
+    └── date_parser.py       # Parse natural-language dates
+```
+
+---
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `/start` | Open main menu |
+| `/help` | Show help and command list |
+| `/add <task>` | Quick-add a task (or open guided flow with no argument) |
+| `/list` | Show pending tasks (group tasks in groups, personal in DM) |
+
+All other actions use inline buttons — no need to remember extra commands.
+
+---
+
+## Installation & Local Setup
+
+### 1. Prerequisites
+
+- Python 3.11+
+- A [Supabase](https://supabase.com) project
+- A Telegram bot token from [@BotFather](https://t.me/BotFather)
+
+### 2. Clone and install
+
+```bash
+git clone <your-repo>
+cd todosmart
+pip install -r requirements.txt
+```
+
+### 3. Set up Supabase
+
+Follow **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** — takes about 5 minutes.
+
+### 4. Configure environment
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```env
+BOT_TOKEN=your_telegram_bot_token
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your_supabase_anon_or_service_key
+DAILY_SUMMARY_HOUR=21
+DAILY_SUMMARY_MINUTE=0
+```
+
+### 5. Run locally
+
+```bash
+python -m bot.main
+```
+
+Expected startup output:
+```
+INFO  TodoSmart bot starting...
+INFO  Restored 0 pending reminder(s)
+INFO  Daily summary scheduled at 21:00
+INFO  Started polling
+```
+
+---
+
+## Deployment to Railway
+
+### From GitHub (recommended)
+
+1. Push your code to GitHub
+2. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
+3. Select your repository
+4. Go to **Variables** and add all environment variables from `.env`
+5. Railway auto-detects `Dockerfile` and deploys automatically
+
+### Railway CLI
+
+```bash
+npm install -g @railway/cli
+railway login
+railway init
+railway up
+```
+
+Then set variables in the Railway dashboard under **Variables**.
+
+### Production tip
+
+Use the **service_role** key instead of the `anon` key for `SUPABASE_KEY` in production — it gives the bot full database access without Row Level Security issues. Get it from **Supabase → Settings → API → service_role**.
+
+---
+
+## How Reminders Work
+
+1. User sets a reminder → APScheduler job created with `run_date` trigger
+2. Job ID stored in Supabase (`tasks.reminder_job_id`)
+3. When time arrives → bot sends a DM to the user
+4. Reminder cleared from database
+5. On bot restart → `restore_reminders()` re-creates all jobs for future reminders from Supabase
+
+---
+
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `BOT_TOKEN` | Yes | Telegram bot token from @BotFather |
+| `SUPABASE_URL` | Yes | Your Supabase project URL |
+| `SUPABASE_KEY` | Yes | Supabase anon key (dev) or service_role key (prod) |
+| `DAILY_SUMMARY_HOUR` | No | Hour for daily task digest (default: 21) |
+| `DAILY_SUMMARY_MINUTE` | No | Minute for daily task digest (default: 0) |
