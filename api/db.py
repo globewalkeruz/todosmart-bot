@@ -1,5 +1,5 @@
 from supabase import AsyncClient, acreate_client
-from api.config import settings
+from config import settings
 
 _client: AsyncClient | None = None
 

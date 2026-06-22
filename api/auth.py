@@ -5,7 +5,7 @@ from urllib.parse import parse_qsl
 
 from fastapi import Header, HTTPException
 
-from api.config import settings
+from config import settings
 
 
 def _validate_init_data(init_data: str) -> dict:

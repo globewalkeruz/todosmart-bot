@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import tasks
+from routes import tasks
 
 app = FastAPI(title="TodoSmart API", version="1.0.0")
 

@@ -3,8 +3,8 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from api.auth import get_user
-from api.db import get_client
+from auth import get_user
+from db import get_client
 
 router = APIRouter()
 
