@@ -242,10 +242,13 @@ async def cb_change_priority(query: CallbackQuery, callback_data: TaskCB) -> Non
 
 @router.callback_query(F.data.startswith("pri:"))
 async def cb_priority_selected(query: CallbackQuery, state: FSMContext, db: AsyncClient) -> None:
-    cb = PriorityCB.unpack(query.data)
+    parts = query.data.split(":", 2)
+    priority = parts[1] if len(parts) > 1 else "medium"
+    task_id = parts[2] if (len(parts) > 2 and parts[2]) else ""
+
     current_state = await state.get_state()
     if current_state == AddTask.waiting_priority.state:
-        await state.update_data(priority=cb.priority)
+        await state.update_data(priority=priority)
         await state.set_state(AddTask.waiting_due_date)
         await query.answer()
         await query.message.edit_text(
@@ -253,13 +256,13 @@ async def cb_priority_selected(query: CallbackQuery, state: FSMContext, db: Asyn
             parse_mode="Markdown",
         )
         return
-    if not cb.task_id:
+    if not task_id:
         await query.answer("Please start again from Add Task.", show_alert=True)
         return
-    await tq.update_task(db, cb.task_id, priority=cb.priority)
+    await tq.update_task(db, task_id, priority=priority)
     is_grp = _is_group(query.message.chat.type)
     await query.message.edit_text(
-        f"🏷️ Priority updated to *{cb.priority.title()}*!",
+        f"🏷️ Priority updated to *{priority.title()}*!",
         parse_mode="Markdown",
         reply_markup=main_menu_kb(is_grp),
     )
