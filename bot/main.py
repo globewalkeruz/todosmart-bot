@@ -62,12 +62,12 @@ async def main() -> None:
     dp.update.middleware(GroupMiddleware())
 
     # ── Routers ─────────────────────────────────────────────────────────────────
-    dp.include_router(errors.router)
     dp.include_router(start.router)
     dp.include_router(tasks.router)
     dp.include_router(reminders.router)
     dp.include_router(groups.router)
     dp.include_router(stats.router)
+    dp.include_router(errors.router)  # last: catch-all fallback
 
     # ── APScheduler ─────────────────────────────────────────────────────────────
     scheduler.start()
