@@ -8,3 +8,8 @@ __pycache__/
 data/
 *.zip
 .DS_Store
+
+# webapp
+webapp/node_modules/
+webapp/dist/
+webapp/.env
