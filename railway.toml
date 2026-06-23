@@ -1,0 +1,11 @@
+# Bot service — deploy from root directory with this file
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 5
+
+# API service — deploy separately with root directory set to "api/"
+# that service uses api/railway.json automatically

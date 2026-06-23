@@ -1,195 +1,197 @@
-# TodoSmart — Telegram To-Do Bot
+# TodoSmart — Telegram Mini App
 
-A feature-rich Telegram bot for personal and team task management, built with **aiogram 3.x** and **Supabase**.
-
----
-
-## Features
-
-### Personal Mode (DM)
-- **Add tasks** via button flow or `/add <title>`
-- **Priority levels** — 🚨 Urgent / 🔴 High / 🟡 Medium / 🟢 Low
-- **Due dates** — natural language: `tomorrow`, `next week`, `DD.MM.YYYY`
-- **Real push reminders** — notifications fire at exact time via APScheduler
-- **Edit tasks** — change title or priority inline
-- **Delete tasks** — actually removes from database
-- **Statistics** — completion rate, priority breakdown
-- **Paginated task list** — 5 tasks per page with navigation buttons
-
-### Group Mode (Groups / Supergroups / Channels)
-- **Shared task board** — all members see group tasks
-- **Task assignment** — assign tasks to specific members
-- **Group statistics** — team-level completion tracking
-- **Member list** — view who is in the group
-
-### System
-- Reminders survive bot restarts (restored from Supabase on startup)
-- Daily summary sent to all users with pending tasks (configurable time)
-- Rate limiting — 1 request per 0.5s per user
-- Auto-registers users and groups on first interaction
+A beautiful, full-featured todo manager built as a **Telegram Mini App**.  
+iOS 18 Liquid Glass design · React + Vite · FastAPI · Supabase · Railway + Vercel
 
 ---
 
-## Tech Stack
+## Project Overview
 
-| Layer | Technology |
+| Layer | Stack |
 |---|---|
-| Bot framework | aiogram 3.x |
+| Bot | Python · aiogram 3.x |
+| API | FastAPI · Uvicorn |
 | Database | Supabase (PostgreSQL) |
-| Scheduler | APScheduler 3.x |
-| Config | pydantic-settings |
-| Deployment | Docker + Railway |
+| Frontend | React 18 · Vite · TypeScript |
+| State | Zustand + TanStack Query |
+| Animations | Framer Motion |
+| Charts | Recharts |
+| Deploy | Railway (API + Bot) · Vercel (Frontend) |
 
 ---
 
 ## Project Structure
 
 ```
-bot/
-├── main.py                  # Entry point
-├── config.py                # Reads .env via pydantic-settings
-├── handlers/
-│   ├── start.py             # /start, /help, main menu
-│   ├── tasks.py             # Add, list, view, complete, delete, edit, priority
-│   ├── reminders.py         # Set/cancel push reminders
-│   ├── groups.py            # Group tasks, members, assignment
-│   ├── stats.py             # Personal + group statistics
-│   └── errors.py            # Global error handler
-├── keyboards/
-│   ├── callback_data.py     # Type-safe CallbackData classes
-│   ├── main_menu.py         # Main menu (personal vs group)
-│   ├── task_kb.py           # Task list + task action keyboards
-│   ├── priority_kb.py       # Priority picker
-│   └── reminder_kb.py       # Reminder time picker
-├── database/
-│   ├── client.py            # Supabase async client singleton
-│   ├── models.py            # Pydantic models
-│   ├── schema.sql           # Full database schema (run once in Supabase)
-│   └── queries/             # One file per table: users, tasks, groups, reminders
-├── middlewares/
-│   ├── db_middleware.py     # Injects Supabase client into every handler
-│   ├── user_middleware.py   # Auto-upserts user on every update
-│   ├── group_middleware.py  # Auto-upserts group + member on group updates
-│   └── throttling.py        # Rate limiting
-├── scheduler/
-│   └── jobs.py              # APScheduler setup, schedule/cancel/restore reminders
-├── states/
-│   └── task_states.py       # FSM state groups for add/edit task flows
-└── utils/
-    ├── formatters.py        # Format task/stats for display
-    └── date_parser.py       # Parse natural-language dates
+todosmart/
+├── api/                  FastAPI REST backend
+│   ├── main.py
+│   ├── auth.py           Telegram initData validation + user upsert
+│   ├── scheduler.py      APScheduler — fires reminder messages
+│   └── routes/
+│       ├── auth.py       POST /api/auth/me
+│       ├── todos.py      CRUD /api/todos/
+│       ├── categories.py CRUD /api/categories/
+│       └── stats.py      GET  /api/stats/{user_id}
+├── bot/                  aiogram Telegram bot
+├── webapp/               React Mini App (Vite)
+│   └── src/
+│       ├── pages/        Dashboard · Todos · Categories · Stats
+│       ├── components/   NavBar · TodoCard · BottomSheet · Forms · Charts
+│       ├── hooks/        TanStack Query data hooks
+│       ├── store/        Zustand global state
+│       └── styles/       globals.css — Liquid Glass design system
+└── migrations/
+    └── 001_initial.sql   Supabase schema
 ```
 
 ---
 
-## Commands
+## Prerequisites
 
-| Command | Description |
-|---|---|
-| `/start` | Open main menu |
-| `/help` | Show help and command list |
-| `/add <task>` | Quick-add a task (or open guided flow with no argument) |
-| `/list` | Show pending tasks (group tasks in groups, personal in DM) |
-
-All other actions use inline buttons — no need to remember extra commands.
+- **Telegram bot** — create one via [@BotFather](https://t.me/BotFather) and note the token
+- **Supabase project** — free tier at [supabase.com](https://supabase.com)
+- **Railway account** — [railway.app](https://railway.app)
+- **Vercel account** — [vercel.com](https://vercel.com)
+- Python 3.11+ and Node.js 18+ for local development
 
 ---
 
-## Installation & Local Setup
+## Step 1 — Supabase Setup
 
-### 1. Prerequisites
+1. Create a new project at [app.supabase.com](https://app.supabase.com)
+2. Go to **SQL Editor** and run the contents of `migrations/001_initial.sql`
+3. From **Settings → API** copy:
+   - **Project URL** → `SUPABASE_URL`
+   - **service_role** key → `SUPABASE_KEY` (use service_role, not anon)
 
-- Python 3.11+
-- A [Supabase](https://supabase.com) project
-- A Telegram bot token from [@BotFather](https://t.me/BotFather)
+---
 
-### 2. Clone and install
+## Step 2 — Local Development
+
+### API
 
 ```bash
-git clone <your-repo>
-cd todosmart
+cd api
+cp .env.example .env        # fill in BOT_TOKEN, SUPABASE_URL, SUPABASE_KEY
 pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+# → http://localhost:8000/health should return {"status":"ok"}
 ```
 
-### 3. Set up Supabase
-
-Follow **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** — takes about 5 minutes.
-
-### 4. Configure environment
+### Bot
 
 ```bash
-cp .env.example .env
-```
-
-Edit `.env`:
-
-```env
-BOT_TOKEN=your_telegram_bot_token
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your_supabase_anon_or_service_key
-DAILY_SUMMARY_HOUR=21
-DAILY_SUMMARY_MINUTE=0
-```
-
-### 5. Run locally
-
-```bash
+cp .env.example .env        # same vars + WEBAPP_URL=https://localhost:5173 (for testing)
+pip install -r requirements.txt
 python -m bot.main
 ```
 
-Expected startup output:
-```
-INFO  TodoSmart bot starting...
-INFO  Restored 0 pending reminder(s)
-INFO  Daily summary scheduled at 21:00
-INFO  Started polling
-```
-
----
-
-## Deployment to Railway
-
-### From GitHub (recommended)
-
-1. Push your code to GitHub
-2. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
-3. Select your repository
-4. Go to **Variables** and add all environment variables from `.env`
-5. Railway auto-detects `Dockerfile` and deploys automatically
-
-### Railway CLI
+### Frontend
 
 ```bash
-npm install -g @railway/cli
-railway login
-railway init
-railway up
+cd webapp
+cp .env.example .env
+# Set VITE_API_URL=http://localhost:8000
+npm install
+npm run dev
+# → http://localhost:5173
 ```
 
-Then set variables in the Railway dashboard under **Variables**.
-
-### Production tip
-
-Use the **service_role** key instead of the `anon` key for `SUPABASE_KEY` in production — it gives the bot full database access without Row Level Security issues. Get it from **Supabase → Settings → API → service_role**.
+> **Local testing tip:** set `VITE_DEV_INIT_DATA` to a real initData string  
+> (open the bot, intercept the request from DevTools, paste the value)
 
 ---
 
-## How Reminders Work
+## Step 3 — Deploy API to Railway
 
-1. User sets a reminder → APScheduler job created with `run_date` trigger
-2. Job ID stored in Supabase (`tasks.reminder_job_id`)
-3. When time arrives → bot sends a DM to the user
-4. Reminder cleared from database
-5. On bot restart → `restore_reminders()` re-creates all jobs for future reminders from Supabase
+1. Push your repo to GitHub
+2. [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub**
+3. Select the repo; Railway will detect `railway.toml` and use `api/Dockerfile`
+4. Go to **Variables** and add:
+
+   ```
+   BOT_TOKEN=...
+   SUPABASE_URL=...
+   SUPABASE_KEY=...
+   WEBAPP_URL=https://your-app.vercel.app   (fill in after Step 4)
+   PORT=8000
+   ```
+
+5. Click **Deploy** — note the generated URL: `https://xxx.railway.app`
 
 ---
 
-## Environment Variables
+## Step 4 — Deploy Frontend to Vercel
+
+1. [vercel.com](https://vercel.com) → **New Project** → import the same GitHub repo
+2. Set **Root Directory** to `webapp`
+3. Add **Environment Variables**:
+
+   ```
+   VITE_API_URL=https://xxx.railway.app
+   ```
+
+4. Deploy — note the Vercel URL: `https://your-app.vercel.app`
+
+---
+
+## Step 5 — Configure the Bot
+
+1. In Railway, update `WEBAPP_URL=https://your-app.vercel.app`
+2. Redeploy the Railway service (or it auto-redeploys)
+3. In Telegram, talk to [@BotFather](https://t.me/BotFather):
+   - `/setmenubutton` → select your bot → paste your Vercel URL
+   - Or use webhook: `curl -X POST https://api.telegram.org/bot<TOKEN>/setWebhook -d url=https://xxx.railway.app/webhook`
+
+---
+
+## Environment Variables Reference
+
+### API / Bot (`.env` or Railway Variables)
 
 | Variable | Required | Description |
 |---|---|---|
-| `BOT_TOKEN` | Yes | Telegram bot token from @BotFather |
-| `SUPABASE_URL` | Yes | Your Supabase project URL |
-| `SUPABASE_KEY` | Yes | Supabase anon key (dev) or service_role key (prod) |
-| `DAILY_SUMMARY_HOUR` | No | Hour for daily task digest (default: 21) |
-| `DAILY_SUMMARY_MINUTE` | No | Minute for daily task digest (default: 0) |
+| `BOT_TOKEN` | ✅ | Telegram bot token from @BotFather |
+| `SUPABASE_URL` | ✅ | Supabase project URL |
+| `SUPABASE_KEY` | ✅ | Supabase **service_role** key |
+| `WEBAPP_URL` | ✅ | Vercel deployment URL |
+| `PORT` | Railway sets this | HTTP port for uvicorn |
+
+### Frontend (`.env` or Vercel Environment Variables)
+
+| Variable | Required | Description |
+|---|---|---|
+| `VITE_API_URL` | ✅ | Railway API URL |
+| `VITE_DEV_INIT_DATA` | Dev only | Telegram initData for local testing |
+
+---
+
+## API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/auth/me` | Validate initData, upsert user, return profile |
+| `GET` | `/api/todos/{user_id}` | List todos (filter: all/pending/completed) |
+| `POST` | `/api/todos/` | Create todo |
+| `PATCH` | `/api/todos/{id}` | Update todo |
+| `DELETE` | `/api/todos/{id}` | Delete todo |
+| `GET` | `/api/categories/{user_id}` | List categories with todo count |
+| `POST` | `/api/categories/` | Create category |
+| `PATCH` | `/api/categories/{id}` | Update category |
+| `DELETE` | `/api/categories/{id}` | Delete category |
+| `GET` | `/api/stats/{user_id}` | Stats (totals, weekly chart, streak) |
+| `GET` | `/health` | Health check |
+
+All requests must include `Authorization: tma <initData>` header.
+
+---
+
+## Bot Commands
+
+| Command | Description |
+|---|---|
+| `/start` | Register user + show Mini App button |
+| `/app` | Open the Mini App |
+| `/stats` | Quick text statistics |
+| `/remind` | Manage reminders |

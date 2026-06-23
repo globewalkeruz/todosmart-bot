@@ -1,3 +1,5 @@
+import os
+
 from aiogram import Router
 from aiogram.filters import CommandStart, Command
 from aiogram.types import (
@@ -9,7 +11,7 @@ from aiogram.types import (
 
 router = Router(name="start")
 
-MINI_APP_URL = "https://globewalkeruz.github.io/todosmart-bot/"
+MINI_APP_URL = os.getenv("WEBAPP_URL", "https://todosmart.vercel.app")
 
 WELCOME = """
 🎯 *Welcome to TodoSmart!*
