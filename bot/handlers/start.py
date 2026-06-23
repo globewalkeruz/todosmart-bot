@@ -11,7 +11,7 @@ from aiogram.types import (
 
 router = Router(name="start")
 
-MINI_APP_URL = os.getenv("WEBAPP_URL", "https://todosmart.vercel.app")
+MINI_APP_URL = os.getenv("WEBAPP_URL", "https://webapp-tawny-psi.vercel.app")
 
 WELCOME = """
 🎯 *Welcome to TodoSmart!*
